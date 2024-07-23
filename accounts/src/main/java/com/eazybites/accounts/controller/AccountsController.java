@@ -1,6 +1,7 @@
 package com.eazybites.accounts.controller;
 
 import com.eazybites.accounts.constants.AccountsConstants;
+import com.eazybites.accounts.dto.AccountsContactInfo;
 import com.eazybites.accounts.dto.CustomerDto;
 import com.eazybites.accounts.dto.ErrorResponseDto;
 import com.eazybites.accounts.dto.ResponseDto;
@@ -13,13 +14,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 
 @Tag(
         name = "CRUD RestAPIs for Accounts Microservice",
@@ -27,11 +30,18 @@ import org.springframework.web.bind.annotation.*;
 )
 @RestController
 @RequestMapping(path = "/api", produces = {MediaType.APPLICATION_JSON_VALUE})
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Validated                        // Ensure that every method of the rest controller is being validated
 public class AccountsController {
 
-    private IAccountService accountService;
+    private final IAccountService accountService;
+
+    @Value("${build.version}")
+    private String buildVersion;
+
+    private final Environment env;
+
+    private final AccountsContactInfo accountsContactInfo;
 
     @Operation(
             summary = "Account creation method",
@@ -164,4 +174,19 @@ public class AccountsController {
         }
     }
 
+    @GetMapping("/build-version")
+    public ResponseEntity<String> getBuildVersion(){
+        return ResponseEntity.status(HttpStatus.OK).body(buildVersion);
+    }
+
+    @GetMapping("/java-version")
+    public ResponseEntity<Object> getEnvironmentalVariable(){
+        String chocolateyLastPathUpdate = env.getProperty("ChocolateyLastPathUpdate");
+        return ResponseEntity.status(HttpStatus.OK).body(chocolateyLastPathUpdate);
+    }
+
+    @GetMapping("/contact-info")
+    public ResponseEntity<Object> getDetails(){
+        return ResponseEntity.status(HttpStatus.OK).body(accountsContactInfo);
+    }
 }

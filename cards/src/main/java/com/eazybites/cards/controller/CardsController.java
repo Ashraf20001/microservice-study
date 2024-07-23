@@ -1,6 +1,7 @@
 package com.eazybites.cards.controller;
 
 import com.eazybites.cards.constants.CardsConstants;
+import com.eazybites.cards.dto.CardsContactInfo;
 import com.eazybites.cards.dto.CardsDto;
 import com.eazybites.cards.dto.ErrorResponseDto;
 import com.eazybites.cards.dto.ResponseDto;
@@ -14,6 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +34,18 @@ import org.springframework.web.bind.annotation.*;
 )
 @RestController
 @RequestMapping(path = "/api", produces = {MediaType.APPLICATION_JSON_VALUE})
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Validated
 public class CardsController {
 
-    private ICardsService iCardsService;
+    private final ICardsService iCardsService;
+
+    @Value("${build.version}")
+    private String buildVersion;
+
+    private final Environment env;
+
+    private final CardsContactInfo cardsContactInfo;
 
     @Operation(
             summary = "Create Card REST API",
@@ -159,5 +170,21 @@ public class CardsController {
                     .status(HttpStatus.EXPECTATION_FAILED)
                     .body(new ResponseDto(CardsConstants.STATUS_417, CardsConstants.MESSAGE_417_DELETE));
         }
+    }
+
+    @GetMapping("/build-version")
+    public ResponseEntity<String> getBuildVersion(){
+        return ResponseEntity.status(HttpStatus.OK).body(buildVersion);
+    }
+
+    @GetMapping("/java-version")
+    public ResponseEntity<Object> getEnvironmentalVariable(){
+        String chocolateyLastPathUpdate = env.getProperty("ChocolateyLastPathUpdate");
+        return ResponseEntity.status(HttpStatus.OK).body(chocolateyLastPathUpdate);
+    }
+
+    @GetMapping("/contact-info")
+    public ResponseEntity<Object> getDetails(){
+        return ResponseEntity.status(HttpStatus.OK).body(cardsContactInfo);
     }
 }

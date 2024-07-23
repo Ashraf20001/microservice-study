@@ -2,6 +2,7 @@ package com.eazybites.loans.controller;
 
 import com.eazybites.loans.constants.LoansConstants;
 import com.eazybites.loans.dto.ErrorResponseDto;
+import com.eazybites.loans.dto.LoansContactInfo;
 import com.eazybites.loans.dto.LoansDto;
 import com.eazybites.loans.dto.ResponseDto;
 import com.eazybites.loans.service.ILoansService;
@@ -14,6 +15,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,10 +30,17 @@ import org.springframework.web.bind.annotation.*;
 )
 @RestController
 @RequestMapping(path = "/api", produces = {MediaType.APPLICATION_JSON_VALUE})
-@AllArgsConstructor
 @Validated
+@RequiredArgsConstructor
 public class LoansController {
-    private ILoansService iLoansService;
+    private final ILoansService iLoansService;
+
+    private final LoansContactInfo loansContactInfo;
+
+    private final Environment env;
+
+    @Value("${build.version}")
+    private String buildVersion;
 
     @Operation(
             summary = "Create Loan REST API",
@@ -169,5 +180,22 @@ public class LoansController {
                     .body(new ResponseDto(LoansConstants.STATUS_417, LoansConstants.MESSAGE_417_DELETE));
         }
     }
+
+    @GetMapping("/build-version")
+    public ResponseEntity<String> getBuildVersion(){
+        return ResponseEntity.status(HttpStatus.OK).body(buildVersion);
+    }
+
+    @GetMapping("/java-version")
+    public ResponseEntity<Object> getEnvironmentalVariable(){
+        String chocolateyLastPathUpdate = env.getProperty("ChocolateyLastPathUpdate");
+        return ResponseEntity.status(HttpStatus.OK).body(chocolateyLastPathUpdate);
+    }
+
+    @GetMapping("/contact-info")
+    public ResponseEntity<Object> getDetails(){
+        return ResponseEntity.status(HttpStatus.OK).body(loansContactInfo);
+    }
+
 
 }
